@@ -1,0 +1,15 @@
+version: '3.2'
+
+services:
+    ecommerce:
+      container_name: ecommerce
+      build:
+        context: .
+        dockerfile: Dockerfile
+      volumes:
+        - "./src:/var/www"
+      environment:
+        CI_ENVIRONMENT: production
+        DBNAME: asa
+      ports:
+          - 8098:80
