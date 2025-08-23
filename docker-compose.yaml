@@ -9,7 +9,30 @@ services:
       volumes:
         - "./src:/var/www"
       environment:
-        CI_ENVIRONMENT: production
-        DBNAME: asa
+        CI_ENVIRONMENT: development
+        app_baseURL: http://localhost:8098/
+        database_default_hostname: mariadb
+        database_default_database: ecommerce
+        database_default_username: root
+        database_default_password: root
+        database_default_DBDriver: MySQLi
+        database_default_DBPrefix:
+        database_default_port: 3306
       ports:
           - 8098:80
+    mariadb:
+      container_name: ecommerce_mariadb
+      image: mariadb
+      restart: no
+      environment:
+        MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
+        MARIADB_ROOT_PASSWORD: root
+        MARIADB_DATABASE: ecommerce
+        MARIADB_USER: mybb
+        MARIADB_PASSWORD: changeme
+      ports:
+        - "3305:3306"
+      volumes:
+        - mariadb:/var/lib/mysql
+volumes:
+  mariadb:
