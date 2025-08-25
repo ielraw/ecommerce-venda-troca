@@ -112,4 +112,59 @@ class Delivery extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function show($dealId = 0)
+    {
+        try {
+            if (!$dealId) {
+                return $this->failValidationError('ID do deal é obrigatório');
+            }
+
+            $deal = $this->dealModel->getDealById($dealId);
+            if (!$deal) {
+                return $this->failNotFound('Deal não encontrado');
+            }
+
+            $delivery = $this->deliveryModel->getDeliveryByDealId($dealId);
+            if (!$delivery) {
+                return $this->failNotFound('Delivery não encontrado para este deal');
+            }
+
+            $steps = $this->deliveryStepModel->getStepsByDeliveryId($delivery['id']);
+
+            $response = [
+                'delivery' => [
+                    'from' => [
+                        'lat' => (float)$delivery['from_lat'],
+                        'lng' => (float)$delivery['from_lng'],
+                        'address' => $delivery['from_address'],
+                        'city' => $delivery['from_city'],
+                        'state' => $delivery['from_state'],
+                        'zip_code' => (int)$delivery['from_zip_code']
+                    ],
+                    'to' => [
+                        'lat' => (float)$delivery['to_lat'],
+                        'lng' => (float)$delivery['to_lng'],
+                        'address' => $delivery['to_address'],
+                        'city' => $delivery['to_city'],
+                        'state' => $delivery['to_state'],
+                        'zip_code' => (int)$delivery['to_zip_code']
+                    ],
+                    'value' => (float)$delivery['value']
+                ],
+                'steps' => array_map(function($step) {
+                    return [
+                        'location' => $step['location'],
+                        'incoming_date' => $step['incoming_date'],
+                        'outcoming_date' => $step['outcoming_date']
+                    ];
+                }, $steps)
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
