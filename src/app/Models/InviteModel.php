@@ -52,4 +52,23 @@ class InviteModel extends Model
                    ->where('user', $userId)
                    ->first();
     }
+
+    public function updateInvite(int $id, int $userId, array $inviteData)
+    {
+        $updateData = [
+            'name' => $inviteData['name'],
+            'email' => $inviteData['email'],
+            'user_invited' => $inviteData['user_invited']
+        ];
+
+        $result = $this->where('id', $id)
+                      ->where('user', $userId)
+                      ->set($updateData)
+                      ->update();
+
+        if ($result) {
+            return $this->find($id);
+        }
+        return false;
+    }
 }

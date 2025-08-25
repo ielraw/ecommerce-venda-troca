@@ -40,6 +40,7 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->post('user/(:num)/invite', 'Invite::create/$1');
     $routes->get('user/(:num)/invite', 'Invite::listInvites/$1');
     $routes->get('user/(:num)/invite/(:num)', 'Invite::show/$1/$2');
+    $routes->put('user/(:num)/invite/(:num)', 'Invite::update/$1/$2');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {

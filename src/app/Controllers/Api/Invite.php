@@ -125,4 +125,55 @@ class Invite extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function update($userId = 0, $inviteId = 0)
+    {
+        try {
+            if (!$userId || !$inviteId) {
+                return $this->failValidationError('ID do usuário e ID do convite são obrigatórios');
+            }
+
+            $user = $this->userModel->getUserById($userId);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $existingInvite = $this->inviteModel->getInviteById($inviteId, $userId);
+            if (!$existingInvite) {
+                return $this->failNotFound('Convite não encontrado');
+            }
+
+            $jsonData = $this->request->getJSON(true);
+
+            $userInvited = $this->userModel->getUserById($jsonData['user_invited']);
+            if (!$userInvited) {
+                return $this->failNotFound('Usuário convidado não encontrado');
+            }
+
+            $validation = \Config\Services::validation();
+            if (!$validation->run($jsonData, 'inviteCreate')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $updatedInvite = $this->inviteModel->updateInvite($inviteId, $userId, $jsonData);
+
+            if (!$updatedInvite) {
+                return $this->failServerError('Erro ao atualizar convite');
+            }
+
+            $response = [
+                'invite' => [
+                    'name' => $updatedInvite['name'],
+                    'email' => $updatedInvite['email'],
+                    'user' => (int)$updatedInvite['user'],
+                    'user_invited' => (int)$updatedInvite['user_invited']
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
