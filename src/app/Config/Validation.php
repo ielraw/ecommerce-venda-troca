@@ -238,4 +238,28 @@ class Validation extends BaseConfig
                        'max_length' => 'A descrição do lance não pode exceder 1000 caracteres'
                    ]
                ];
-           }
+
+    public $messageCreate = [
+        'user_id' => 'required|integer|greater_than[0]',
+        'title' => 'required|min_length[3]|max_length[255]',
+        'message' => 'required|min_length[10]|max_length[2000]'
+    ];
+
+    public $messageCreate_errors = [
+        'user_id' => [
+            'required' => 'O ID do usuário é obrigatório',
+            'integer' => 'O ID do usuário deve ser um número inteiro',
+            'greater_than' => 'O ID do usuário deve ser maior que zero'
+        ],
+        'title' => [
+            'required' => 'O título é obrigatório',
+            'min_length' => 'O título deve ter pelo menos 3 caracteres',
+            'max_length' => 'O título não pode exceder 255 caracteres'
+        ],
+        'message' => [
+            'required' => 'A mensagem é obrigatória',
+            'min_length' => 'A mensagem deve ter pelo menos 10 caracteres',
+            'max_length' => 'A mensagem não pode exceder 2000 caracteres'
+        ]
+    ];
+}
