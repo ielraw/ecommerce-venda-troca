@@ -128,4 +128,47 @@ class Bid extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function update($dealId = 0, $bidId = 0)
+    {
+        try {
+
+            $existingBid = $this->bidModel->getBidById($bidId, $dealId);
+            if (!$existingBid) {
+                return $this->failNotFound('Lance não encontrado');
+            }
+
+            $jsonData = $this->request->getJSON(true);
+
+            $user = $this->userModel->getUserById($jsonData['user_id']);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $validation = \Config\Services::validation();
+            if (!$validation->run($jsonData, 'bidCreate')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $updatedBid = $this->bidModel->updateBid($bidId, $dealId, $jsonData);
+
+            if (!$updatedBid) {
+                return $this->failServerError('Erro ao atualizar lance');
+            }
+
+            $response = [
+                'bid' => [
+                    'user_id' => (int)$updatedBid['user_id'],
+                    'accepted' => (bool)$updatedBid['accepted'],
+                    'value' => (float)$updatedBid['value'],
+                    'description' => $updatedBid['description']
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }

@@ -30,6 +30,7 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->post('deal/(:num)/bid', 'Bid::create/$1');
     $routes->get('deal/(:num)/bid', 'Bid::listBids/$1');
     $routes->get('deal/(:num)/bid/(:num)', 'Bid::show/$1/$2');
+    $routes->put('deal/(:num)/bid/(:num)', 'Bid::update/$1/$2');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {

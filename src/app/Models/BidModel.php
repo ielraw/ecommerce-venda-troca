@@ -54,4 +54,24 @@ class BidModel extends Model
                    ->orderBy('created_at', 'DESC')
                    ->findAll();
     }
+
+    public function updateBid(int $id, int $dealId, array $bidData)
+    {
+        $updateData = [
+            'user_id' => $bidData['user_id'],
+            'accepted' => $bidData['accepted'],
+            'value' => $bidData['value'],
+            'description' => $bidData['description']
+        ];
+
+        $result = $this->where('id', $id)
+                      ->where('deal_id', $dealId)
+                      ->set($updateData)
+                      ->update();
+
+        if ($result) {
+            return $this->find($id);
+        }
+        return false;
+    }
 }
