@@ -128,4 +128,54 @@ class Message extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function update($dealId = 0, $messageId = 0)
+    {
+        try {
+            if (!$dealId || !$messageId) {
+                return $this->failValidationError('ID do deal e ID da mensagem são obrigatórios');
+            }
+
+            $deal = $this->dealModel->getDealById($dealId);
+            if (!$deal) {
+                return $this->failNotFound('Deal não encontrado');
+            }
+
+            $existingMessage = $this->messageModel->getMessageById($messageId, $dealId);
+            if (!$existingMessage) {
+                return $this->failNotFound('Mensagem não encontrada');
+            }
+
+            $jsonData = $this->request->getJSON(true);
+
+            $user = $this->userModel->getUserById($jsonData['user_id']);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $validation = \Config\Services::validation();
+            if (!$validation->run($jsonData, 'messageCreate')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $updatedMessage = $this->messageModel->updateMessage($messageId, $dealId, $jsonData);
+
+            if (!$updatedMessage) {
+                return $this->failServerError('Erro ao atualizar mensagem');
+            }
+
+            $response = [
+                'message' => [
+                    'user_id' => (int)$updatedMessage['user_id'],
+                    'title' => $updatedMessage['title'],
+                    'message' => $updatedMessage['message']
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }

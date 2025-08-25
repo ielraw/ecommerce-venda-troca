@@ -52,4 +52,23 @@ class MessageModel extends Model
                    ->where('deal_id', $dealId)
                    ->first();
     }
+
+    public function updateMessage(int $id, int $dealId, array $messageData)
+    {
+        $updateData = [
+            'user_id' => $messageData['user_id'],
+            'title' => $messageData['title'],
+            'message' => $messageData['message']
+        ];
+
+        $result = $this->where('id', $id)
+                      ->where('deal_id', $dealId)
+                      ->set($updateData)
+                      ->update();
+
+        if ($result) {
+            return $this->find($id);
+        }
+        return false;
+    }
 }
