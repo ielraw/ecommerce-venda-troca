@@ -208,8 +208,34 @@ class Validation extends BaseConfig
         'lat' => [
             'decimal' => 'A latitude deve ser um número decimal'
         ],
-        'lng' => [
-            'decimal' => 'A longitude deve ser um número decimal'
-        ]
-    ];
-}
+                           'lng' => [
+                       'decimal' => 'A longitude deve ser um número decimal'
+                   ]
+               ];
+
+               public $bidCreate = [
+                   'user_id' => 'required|integer|greater_than[0]',
+                   'accepted' => 'permit_empty|in_list[0,1,true,false]',
+                   'value' => 'required|decimal|greater_than[0]',
+                   'description' => 'permit_empty|max_length[1000]'
+               ];
+
+               public $bidCreate_errors = [
+                   'user_id' => [
+                       'required' => 'O ID do usuário é obrigatório',
+                       'integer' => 'O ID do usuário deve ser um número inteiro',
+                       'greater_than' => 'O ID do usuário deve ser maior que zero'
+                   ],
+                   'accepted' => [
+                       'in_list' => 'O status de aceitação deve ser true ou false'
+                   ],
+                   'value' => [
+                       'required' => 'O valor do lance é obrigatório',
+                       'decimal' => 'O valor do lance deve ser um número decimal',
+                       'greater_than' => 'O valor do lance deve ser maior que zero'
+                   ],
+                   'description' => [
+                       'max_length' => 'A descrição do lance não pode exceder 1000 caracteres'
+                   ]
+               ];
+           }
