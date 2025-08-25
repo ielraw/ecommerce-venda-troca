@@ -186,4 +186,73 @@ class Deal extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function update($id = null)
+    {
+        try {
+            $jsonData = $this->request->getJSON(true);
+
+            $validation = \Config\Services::validation();
+
+            if (!$validation->run($jsonData, 'dealCreate')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $deal = $this->dealModel->getDealById($id);
+            if (!$deal) {
+                return $this->failNotFound('Deal não encontrado para atualização');
+            }
+
+            $this->locationModel->update($deal['location_id'], $jsonData['location']);
+
+            $dealData = [
+                'type' => $jsonData['type'],
+                'value' => $jsonData['value'],
+                'description' => $jsonData['description'],
+                'trade_for' => $jsonData['trade_for'],
+                'urgency_type' => $jsonData['urgency']['type'],
+                'urgency_limit_date' => $jsonData['urgency']['limit_date'] ?? null,
+            ];
+
+            $this->dealModel->update($id, $dealData);
+
+            if (isset($jsonData['photos']) && is_array($jsonData['photos'])) {
+                $this->dealPhotoModel->where('deal_id', $id)->delete();
+                $this->dealPhotoModel->addPhotos($id, $jsonData['photos']);
+            }
+
+            $updatedDeal = $this->dealModel->getDealById($id);
+            $updatedLocation = $this->locationModel->getLocationById($updatedDeal['location_id']);
+            $updatedPhotos = $this->dealPhotoModel->getPhotosByDealId($id);
+
+            $response = [
+                'deal' => [
+                    'type' => (int)$updatedDeal['type'],
+                    'value' => (float)$updatedDeal['value'],
+                    'description' => $updatedDeal['description'],
+                    'trade_for' => $updatedDeal['trade_for'],
+                    'location' => [
+                        'lat' => (float)$updatedLocation['lat'],
+                        'lng' => (float)$updatedLocation['lng'],
+                        'address' => $updatedLocation['address'],
+                        'city' => $updatedLocation['city'],
+                        'state' => $updatedLocation['state'],
+                        'zip_code' => (int)$updatedLocation['zip_code']
+                    ],
+                    'urgency' => [
+                        'type' => (int)$updatedDeal['urgency_type'],
+                        'limit_date' => $updatedDeal['urgency_limit_date']
+                    ],
+                    'photos' => array_map(function($photo) {
+                        return ['src' => $photo['src']];
+                    }, $updatedPhotos)
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
