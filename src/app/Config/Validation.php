@@ -292,4 +292,28 @@ class Validation extends BaseConfig
             'valid_date' => 'A data de saída deve ser válida'
         ]
     ];
+
+    public $inviteCreate = [
+        'name' => 'required|min_length[2]|max_length[255]',
+        'email' => 'required|valid_email|max_length[255]',
+        'user_invited' => 'required|integer|greater_than[0]'
+    ];
+
+    public $inviteCreate_errors = [
+        'name' => [
+            'required' => 'O nome é obrigatório',
+            'min_length' => 'O nome deve ter pelo menos 2 caracteres',
+            'max_length' => 'O nome não pode exceder 255 caracteres'
+        ],
+        'email' => [
+            'required' => 'O email é obrigatório',
+            'valid_email' => 'O email deve ser válido',
+            'max_length' => 'O email não pode exceder 255 caracteres'
+        ],
+        'user_invited' => [
+            'required' => 'O ID do usuário convidado é obrigatório',
+            'integer' => 'O ID do usuário convidado deve ser um número inteiro',
+            'greater_than' => 'O ID do usuário convidado deve ser maior que zero'
+        ]
+    ];
 }
