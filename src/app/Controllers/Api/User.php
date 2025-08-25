@@ -92,4 +92,59 @@ class User extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function update($id)
+    {
+        try {
+            $jsonData = $this->request->getJSON(true);
+
+            $validation = \Config\Services::validation();
+
+            if (!$validation->run($jsonData, 'userCreate')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $user = $this->userModel->find($id);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $locationId = $user['location_id'];
+
+            $this->locationModel->update($locationId, $jsonData['location']);
+
+            $userData = [
+                'name' => $jsonData['name'],
+                'email' => $jsonData['email'],
+                'login' => $jsonData['login'],
+                'password' => $jsonData['password'],
+            ];
+
+            $this->userModel->update($id, $userData);
+
+            $updatedUser = $this->userModel->find($id);
+            $updatedLocation = $this->locationModel->find($locationId);
+
+            $response = [
+                'user' => [
+                    'name' => $updatedUser['name'],
+                    'email' => $updatedUser['email'],
+                    'login' => $updatedUser['login'],
+                    'password' => $jsonData['password'],
+                    'location' => [
+                        'lat' => (float) $updatedLocation['lat'],
+                        'lng' => (float) $updatedLocation['lng'],
+                        'address' => $updatedLocation['address'],
+                        'city' => $updatedLocation['city'],
+                        'state' => $updatedLocation['state'],
+                        'zip_code' => (int) $updatedLocation['zip_code']
+                    ]
+                ]
+            ];
+
+            return $this->respond($response);
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
