@@ -44,14 +44,13 @@ class CreateDealPhotosTable extends Migration
         $this->forge->addKey('deal_id');
         $this->forge->addKey('created_at');
 
-        $this->forge->createTable('deal_photos');
+        $this->forge->addForeignKey('deal_id', 'deals', 'id', 'CASCADE', 'CASCADE');
 
-        $this->db->query('ALTER TABLE `deal_photos` ADD CONSTRAINT `fk_deal_photos_deal` FOREIGN KEY (`deal_id`) REFERENCES `deals`(`id`) ON DELETE CASCADE ON UPDATE CASCADE');
+        $this->forge->createTable('deal_photos');
     }
 
     public function down()
     {
-        $this->db->query('ALTER TABLE `deal_photos` DROP FOREIGN KEY `fk_deal_photos_deal`');
         $this->forge->dropTable('deal_photos');
     }
 }

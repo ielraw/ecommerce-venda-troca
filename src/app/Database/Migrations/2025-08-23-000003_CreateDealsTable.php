@@ -35,34 +35,10 @@ class CreateDealsTable extends Migration
                 'constraint' => 500,
                 'null' => true,
             ],
-            'location_lat' => [
-                'type' => 'DECIMAL',
-                'constraint' => '10,8',
-                'null' => false,
-            ],
-            'location_lng' => [
-                'type' => 'DECIMAL',
-                'constraint' => '11,8',
-                'null' => false,
-            ],
-            'location_address' => [
-                'type' => 'VARCHAR',
-                'constraint' => 500,
-                'null' => false,
-            ],
-            'location_city' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => false,
-            ],
-            'location_state' => [
-                'type' => 'VARCHAR',
-                'constraint' => 100,
-                'null' => false,
-            ],
-            'location_zip_code' => [
+            'location_id' => [
                 'type' => 'INT',
                 'constraint' => 11,
+                'unsigned' => true,
                 'null' => false,
             ],
             'urgency_type' => [
@@ -89,9 +65,12 @@ class CreateDealsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
+        $this->forge->addKey('location_id');
         $this->forge->addKey('type');
         $this->forge->addKey('urgency_type');
         $this->forge->addKey('created_at');
+
+        $this->forge->addForeignKey('location_id', 'locations', 'id', 'RESTRICT', 'CASCADE');
 
         $this->forge->createTable('deals');
     }

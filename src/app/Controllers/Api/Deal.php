@@ -3,13 +3,25 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use CodeIgniter\API\ResponseTrait;
 use App\Models\DealModel;
+use App\Models\LocationModel;
 use App\Models\DealPhotoModel;
+use CodeIgniter\API\ResponseTrait;
 
 class Deal extends BaseController
 {
     use ResponseTrait;
+    protected $format = 'json';
+    protected $dealModel;
+    protected $locationModel;
+    protected $dealPhotoModel;
+
+    public function __construct()
+    {
+        $this->dealModel = new DealModel();
+        $this->locationModel = new LocationModel();
+        $this->dealPhotoModel = new DealPhotoModel();
+    }
 
     public function create()
     {
@@ -17,110 +29,159 @@ class Deal extends BaseController
             $jsonData = $this->request->getJSON(true);
 
             $validation = \Config\Services::validation();
+
             if (!$validation->run($jsonData, 'dealCreate')) {
                 return $this->failValidationErrors($validation->getErrors());
             }
 
-            $dealModel = new DealModel();
-            $dealPhotoModel = new DealPhotoModel();
-
-            $dealData = [
-                'type' => (int) $jsonData['type'],
-                'value' => (float) $jsonData['value'],
-                'description' => $jsonData['description'],
-                'trade_for' => $jsonData['trade_for'] ?? null,
-                'location_lat' => (float) $jsonData['location']['lat'],
-                'location_lng' => (float) $jsonData['location']['lng'],
-                'location_address' => $jsonData['location']['address'],
-                'location_city' => $jsonData['location']['city'],
-                'location_state' => $jsonData['location']['state'],
-                'location_zip_code' => (int) $jsonData['location']['zip_code'],
-                'urgency_type' => (int) $jsonData['urgency']['type'],
-                'urgency_limit_date' => $jsonData['urgency']['limit_date'] ?? null
+            $locationData = [
+                'lat' => $jsonData['location']['lat'],
+                'lng' => $jsonData['location']['lng'],
+                'address' => $jsonData['location']['address'],
+                'city' => $jsonData['location']['city'],
+                'state' => $jsonData['location']['state'],
+                'zip_code' => $jsonData['location']['zip_code']
             ];
 
-            $dealId = $dealModel->insert($dealData);
-            if (!$dealId) {
+            $location = $this->locationModel->createLocation($locationData);
+
+            if (!$location) {
+                return $this->failServerError('Erro ao criar localização');
+            }
+
+            $deal = $this->dealModel->createDeal($jsonData, $location['id']);
+
+            if (!$deal) {
                 return $this->failServerError('Erro ao criar deal');
             }
 
-            $photos = $jsonData['photos'] ?? [];
-            foreach ($photos as $p) {
-                if (isset($p['src']) && $p['src'] !== '') {
-                    $dealPhotoModel->insert([
-                        'deal_id' => $dealId,
-                        'src' => $p['src']
-                    ]);
-                }
+            $photos = [];
+            if (isset($jsonData['photos']) && is_array($jsonData['photos'])) {
+                $photos = $this->dealPhotoModel->addPhotos($deal['id'], $jsonData['photos']);
             }
-
-            $created = $dealModel->find($dealId);
-            $createdPhotos = $dealPhotoModel->where('deal_id', $dealId)->findAll();
 
             $response = [
                 'deal' => [
-                    'type' => (int) $created['type'],
-                    'value' => (float) $created['value'],
-                    'description' => $created['description'],
-                    'trade_for' => $created['trade_for'],
+                    'type' => (int)$deal['type'],
+                    'value' => (float)$deal['value'],
+                    'description' => $deal['description'],
+                    'trade_for' => $deal['trade_for'],
                     'location' => [
-                        'lat' => (float) $created['location_lat'],
-                        'lng' => (float) $created['location_lng'],
-                        'address' => $created['location_address'],
-                        'city' => $created['location_city'],
-                        'state' => $created['location_state'],
-                        'zip_code' => (int) $created['location_zip_code']
+                        'lat' => (float)$location['lat'],
+                        'lng' => (float)$location['lng'],
+                        'address' => $location['address'],
+                        'city' => $location['city'],
+                        'state' => $location['state'],
+                        'zip_code' => (int)$location['zip_code']
                     ],
                     'urgency' => [
-                        'type' => (int) $created['urgency_type'],
-                        'limit_date' => $created['urgency_limit_date']
+                        'type' => (int)$deal['urgency_type'],
+                        'limit_date' => $deal['urgency_limit_date']
                     ],
-                    'photos' => array_map(function ($p) { return ['src' => $p['src']]; }, $createdPhotos)
+                    'photos' => array_map(function($photo) {
+                        return ['src' => $photo['src']];
+                    }, $photos)
                 ]
             ];
 
             return $this->respondCreated($response);
+
         } catch (\Exception $e) {
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
 
-    public function show($id)
+    public function show($id = null)
     {
         try {
-            $dealModel = new DealModel();
-            $dealPhotoModel = new DealPhotoModel();
+            $deal = $this->dealModel->getDealById($id);
 
-            $deal = $dealModel->find($id);
             if (!$deal) {
                 return $this->failNotFound('Deal não encontrado');
             }
 
-            $photos = $dealPhotoModel->where('deal_id', $id)->findAll();
+            $location = $this->locationModel->getLocationById($deal['location_id']);
+            if (!$location) {
+                return $this->failServerError('Localização do deal não encontrada');
+            }
+
+            $photos = $this->dealPhotoModel->getPhotosByDealId($deal['id']);
 
             $response = [
                 'deal' => [
-                    'type' => (int) $deal['type'],
-                    'value' => (float) $deal['value'],
+                    'type' => (int)$deal['type'],
+                    'value' => (float)$deal['value'],
                     'description' => $deal['description'],
                     'trade_for' => $deal['trade_for'],
                     'location' => [
-                        'lat' => (float) $deal['location_lat'],
-                        'lng' => (float) $deal['location_lng'],
-                        'address' => $deal['location_address'],
-                        'city' => $deal['location_city'],
-                        'state' => $deal['location_state'],
-                        'zip_code' => (int) $deal['location_zip_code']
+                        'lat' => (float)$location['lat'],
+                        'lng' => (float)$location['lng'],
+                        'address' => $location['address'],
+                        'city' => $location['city'],
+                        'state' => $location['state'],
+                        'zip_code' => (int)$location['zip_code']
                     ],
                     'urgency' => [
-                        'type' => (int) $deal['urgency_type'],
+                        'type' => (int)$deal['urgency_type'],
                         'limit_date' => $deal['urgency_limit_date']
                     ],
-                    'photos' => array_map(function ($p) { return ['src' => $p['src']]; }, $photos)
+                    'photos' => array_map(function($photo) {
+                        return ['src' => $photo['src']];
+                    }, $photos)
                 ]
             ];
 
             return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
+
+    public function search()
+    {
+        try {
+            $jsonData = $this->request->getJSON(true);
+
+            $validation = \Config\Services::validation();
+
+            if (!$validation->run($jsonData, 'dealSearch')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $deals = $this->dealModel->searchDeals($jsonData);
+
+            $response = [];
+            foreach ($deals as $deal) {
+                $photos = $this->dealPhotoModel->getPhotosByDealId($deal['id']);
+
+                $response[] = [
+                    'deal' => [
+                        'type' => (int)$deal['type'],
+                        'value' => (float)$deal['value'],
+                        'description' => $deal['description'],
+                        'trade_for' => $deal['trade_for'],
+                        'location' => [
+                            'lat' => (float)$deal['lat'],
+                            'lng' => (float)$deal['lng'],
+                            'address' => $deal['address'],
+                            'city' => $deal['city'],
+                            'state' => $deal['state'],
+                            'zip_code' => (int)$deal['zip_code']
+                        ],
+                        'urgency' => [
+                            'type' => (int)$deal['urgency_type'],
+                            'limit_date' => $deal['urgency_limit_date']
+                        ],
+                        'photos' => array_map(function($photo) {
+                            return ['src' => $photo['src']];
+                        }, $photos)
+                    ]
+                ];
+            }
+
+            return $this->respond($response);
+
         } catch (\Exception $e) {
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }

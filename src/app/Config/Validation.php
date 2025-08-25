@@ -179,4 +179,37 @@ class Validation extends BaseConfig
             'max_length' => 'O src da foto é muito longo'
         ]
     ];
+
+    public $dealSearch = [
+        'type' => 'permit_empty|integer|in_list[1,2,3]',
+        'value_start' => 'permit_empty|decimal|greater_than_equal_to[0]',
+        'value_end' => 'permit_empty|decimal|greater_than_equal_to[0]',
+        'term' => 'permit_empty|max_length[255]',
+        'lat' => 'permit_empty|decimal',
+        'lng' => 'permit_empty|decimal'
+    ];
+
+    public $dealSearch_errors = [
+        'type' => [
+            'integer' => 'O tipo deve ser um número inteiro',
+            'in_list' => 'O tipo deve ser 1 (Venda), 2 (Troca) ou 3 (Desejo)'
+        ],
+        'value_start' => [
+            'decimal' => 'O valor inicial deve ser um número decimal',
+            'greater_than_equal_to' => 'O valor inicial não pode ser negativo'
+        ],
+        'value_end' => [
+            'decimal' => 'O valor final deve ser um número decimal',
+            'greater_than_equal_to' => 'O valor final não pode ser negativo'
+        ],
+        'term' => [
+            'max_length' => 'O termo de busca não pode exceder 255 caracteres'
+        ],
+        'lat' => [
+            'decimal' => 'A latitude deve ser um número decimal'
+        ],
+        'lng' => [
+            'decimal' => 'A longitude deve ser um número decimal'
+        ]
+    ];
 }
