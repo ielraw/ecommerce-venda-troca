@@ -334,4 +334,22 @@ class Validation extends BaseConfig
             'max_length' => 'A senha não pode exceder 255 caracteres'
         ]
     ];
+
+    public $authenticateSSO = [
+        'login' => 'required|min_length[3]|max_length[100]',
+        'app_token' => 'required|min_length[10]|max_length[255]'
+    ];
+
+    public $authenticateSSO_errors = [
+        'login' => [
+            'required' => 'O login é obrigatório',
+            'min_length' => 'O login deve ter pelo menos 3 caracteres',
+            'max_length' => 'O login não pode exceder 100 caracteres'
+        ],
+        'app_token' => [
+            'required' => 'O token de aplicação é obrigatório',
+            'min_length' => 'O token de aplicação deve ter pelo menos 10 caracteres',
+            'max_length' => 'O token de aplicação não pode exceder 255 caracteres'
+        ]
+    ];
 }

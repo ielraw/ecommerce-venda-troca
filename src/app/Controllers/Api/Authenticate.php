@@ -74,4 +74,61 @@ class Authenticate extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function sso()
+    {
+        try {
+            $jsonData = $this->request->getJSON(true);
+
+            $validation = \Config\Services::validation();
+            if (!$validation->run($jsonData, 'authenticateSSO')) {
+                return $this->failValidationErrors($validation->getErrors());
+            }
+
+            $user = $this->userModel->getUserByLogin($jsonData['login']);
+            if (!$user) {
+                return $this->failUnauthorized('Usuário não encontrado');
+            }
+
+            $appToken = getenv('APP_TOKEN') ?: 'default_app_token';
+            if ($jsonData['app_token'] !== $appToken) {
+                return $this->failUnauthorized('Token de aplicação inválido');
+            }
+
+            $key = getenv('JWT_SECRET') ?: 'default_secret_key';
+            $payload = [
+                'iss' => 'ecommerce-api',
+                'aud' => 'ecommerce-users',
+                'iat' => time(),
+                'exp' => time() + (60 * 60 * 24), // 24 horas
+                'user_id' => $user['id'],
+                'login' => $user['login']
+            ];
+
+            $token = JWT::encode($payload, $key, 'HS256');
+
+            $response = [
+                'token' => $token,
+                'user' => [
+                    'name' => $user['name'],
+                    'email' => $user['email'],
+                    'login' => $user['login'],
+                    'password' => $user['password'],
+                    'location' => [
+                        'lat' => (float)$user['lat'],
+                        'lng' => (float)$user['lng'],
+                        'address' => $user['address'],
+                        'city' => $user['city'],
+                        'state' => $user['state'],
+                        'zip_code' => (int)$user['zip_code']
+                    ]
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
