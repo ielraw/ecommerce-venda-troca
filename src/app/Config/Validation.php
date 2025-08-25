@@ -316,4 +316,22 @@ class Validation extends BaseConfig
             'greater_than' => 'O ID do usuário convidado deve ser maior que zero'
         ]
     ];
+
+    public $authenticate = [
+        'login' => 'required|min_length[3]|max_length[100]',
+        'password' => 'required|min_length[6]|max_length[255]'
+    ];
+
+    public $authenticate_errors = [
+        'login' => [
+            'required' => 'O login é obrigatório',
+            'min_length' => 'O login deve ter pelo menos 3 caracteres',
+            'max_length' => 'O login não pode exceder 100 caracteres'
+        ],
+        'password' => [
+            'required' => 'A senha é obrigatória',
+            'min_length' => 'A senha deve ter pelo menos 6 caracteres',
+            'max_length' => 'A senha não pode exceder 255 caracteres'
+        ]
+    ];
 }

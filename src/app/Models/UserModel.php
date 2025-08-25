@@ -111,6 +111,36 @@ class UserModel extends Model
         
         if ($user) {
             return [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'login' => $user['login'],
+                'password' => $user['password'],
+                'location_id' => (int)$user['location_id'],
+                'lat' => $user['lat'],
+                'lng' => $user['lng'],
+                'address' => $user['address'],
+                'city' => $user['city'],
+                'state' => $user['state'],
+                'zip_code' => $user['zip_code']
+            ];
+        }
+        
+        return false;
+    }
+
+    public function getUserByLogin($login)
+    {
+        $builder = $this->builder();
+        $builder->select('users.*, locations.lat, locations.lng, locations.address, locations.city, locations.state, locations.zip_code');
+        $builder->join('locations', 'locations.id = users.location_id');
+        $builder->where('users.login', $login);
+        
+        $user = $builder->get()->getRowArray();
+        
+        if ($user) {
+            return [
+                'id' => $user['id'],
                 'name' => $user['name'],
                 'email' => $user['email'],
                 'login' => $user['login'],

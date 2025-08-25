@@ -41,6 +41,7 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->get('user/(:num)/invite', 'Invite::listInvites/$1');
     $routes->get('user/(:num)/invite/(:num)', 'Invite::show/$1/$2');
     $routes->put('user/(:num)/invite/(:num)', 'Invite::update/$1/$2');
+    $routes->post('authenticate', 'Authenticate::login');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
