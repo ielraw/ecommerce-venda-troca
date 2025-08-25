@@ -63,4 +63,37 @@ class Invite extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function show($userId = 0, $inviteId = 0)
+    {
+        try {
+            if (!$userId || !$inviteId) {
+                return $this->failValidationError('ID do usuário e ID do convite são obrigatórios');
+            }
+
+            $user = $this->userModel->getUserById($userId);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $invite = $this->inviteModel->getInviteById($inviteId, $userId);
+            if (!$invite) {
+                return $this->failNotFound('Convite não encontrado');
+            }
+
+            $response = [
+                'invite' => [
+                    'name' => $invite['name'],
+                    'email' => $invite['email'],
+                    'user' => (int)$invite['user'],
+                    'user_invited' => (int)$invite['user_invited']
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }

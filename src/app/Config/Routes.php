@@ -38,6 +38,7 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->post('deal/(:num)/delivery', 'Delivery::create/$1');
     $routes->get('deal/(:num)/delivery', 'Delivery::show/$1');
     $routes->post('user/(:num)/invite', 'Invite::create/$1');
+    $routes->get('user/(:num)/invite/(:num)', 'Invite::show/$1/$2');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
