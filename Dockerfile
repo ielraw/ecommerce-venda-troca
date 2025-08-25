@@ -14,6 +14,15 @@ RUN docker-php-ext-install \
     docker-php-ext-enable pdo_mysql
 RUN docker-php-ext-configure intl
 
+RUN pecl install \
+            xdebug
+
+RUN docker-php-ext-enable \
+            xdebug
+RUN echo "xdebug.mode=debug, develop" | tee -a /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini > /dev/null && \
+    echo "xdebug.start_with_request=yes" | tee -a /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini > /dev/null && \
+    echo "xdebug.discover_client_host=true" | tee -a /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini > /dev/null && \
+    echo "xdebug.client_host=host.docker.internal" | tee -a /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini > /dev/null
 
 RUN ln -sf /proc/self/fd/2 /var/log/apache2/access.log && \
     ln -sf /proc/self/fd/2 /var/log/apache2/error.log
