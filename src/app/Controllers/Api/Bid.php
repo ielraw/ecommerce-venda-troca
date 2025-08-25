@@ -95,4 +95,37 @@ class Bid extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function listBids($dealId = null)
+    {
+        try {
+            if (!$dealId) {
+                return $this->failValidationError('ID do deal é obrigatório');
+            }
+
+            $deal = $this->dealModel->getDealById($dealId);
+            if (!$deal) {
+                return $this->failNotFound('Deal não encontrado');
+            }
+
+            $bids = $this->bidModel->getBidsByDealId($dealId);
+
+            $response = [];
+            foreach ($bids as $bid) {
+                $response[] = [
+                    'bid' => [
+                        'user_id' => (int)$bid['user_id'],
+                        'accepted' => (bool)$bid['accepted'],
+                        'value' => (float)$bid['value'],
+                        'description' => $bid['description']
+                    ]
+                ];
+            }
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }

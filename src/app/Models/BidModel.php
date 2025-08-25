@@ -46,4 +46,12 @@ class BidModel extends Model
                    ->where('deal_id', $dealId)
                    ->first();
     }
+
+    public function getBidsByDealId(int $dealId)
+    {
+        return $this->where('deal_id', $dealId)
+                   ->where('deleted_at IS NULL')
+                   ->orderBy('created_at', 'DESC')
+                   ->findAll();
+    }
 }
