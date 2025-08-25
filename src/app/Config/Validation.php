@@ -262,4 +262,34 @@ class Validation extends BaseConfig
             'max_length' => 'A mensagem não pode exceder 2000 caracteres'
         ]
     ];
+
+    public $deliveryCreate = [
+        'user_id' => 'required|integer|greater_than[0]',
+        'value' => 'permit_empty|decimal|greater_than_equal_to[0]',
+        'steps.*.location' => 'permit_empty|min_length[3]|max_length[255]',
+        'steps.*.incoming_date' => 'permit_empty|valid_date',
+        'steps.*.outcoming_date' => 'permit_empty|valid_date'
+    ];
+
+    public $deliveryCreate_errors = [
+        'user_id' => [
+            'required' => 'O ID do usuário é obrigatório',
+            'integer' => 'O ID do usuário deve ser um número inteiro',
+            'greater_than' => 'O ID do usuário deve ser maior que zero'
+        ],
+        'value' => [
+            'decimal' => 'O valor do delivery deve ser um número decimal',
+            'greater_than_equal_to' => 'O valor do delivery não pode ser negativo'
+        ],
+        'steps.*.location' => [
+            'min_length' => 'A localização do step deve ter pelo menos 3 caracteres',
+            'max_length' => 'A localização do step não pode exceder 255 caracteres'
+        ],
+        'steps.*.incoming_date' => [
+            'valid_date' => 'A data de chegada deve ser válida'
+        ],
+        'steps.*.outcoming_date' => [
+            'valid_date' => 'A data de saída deve ser válida'
+        ]
+    ];
 }

@@ -35,6 +35,7 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->get('deal/(:num)/message', 'Message::listMessages/$1');
     $routes->get('deal/(:num)/message/(:num)', 'Message::show/$1/$2');
     $routes->put('deal/(:num)/message/(:num)', 'Message::update/$1/$2');
+    $routes->post('deal/(:num)/delivery', 'Delivery::create/$1');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {

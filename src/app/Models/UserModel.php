@@ -102,7 +102,12 @@ class UserModel extends Model
 
     public function getUserById($id)
     {
-        $user = $this->find($id);
+        $builder = $this->builder();
+        $builder->select('users.*, locations.lat, locations.lng, locations.address, locations.city, locations.state, locations.zip_code');
+        $builder->join('locations', 'locations.id = users.location_id');
+        $builder->where('users.id', $id);
+        
+        $user = $builder->get()->getRowArray();
         
         if ($user) {
             return [
@@ -110,7 +115,13 @@ class UserModel extends Model
                 'email' => $user['email'],
                 'login' => $user['login'],
                 'password' => $user['password'],
-                'location_id' => (int)$user['location_id']
+                'location_id' => (int)$user['location_id'],
+                'lat' => $user['lat'],
+                'lng' => $user['lng'],
+                'address' => $user['address'],
+                'city' => $user['city'],
+                'state' => $user['state'],
+                'zip_code' => $user['zip_code']
             ];
         }
         

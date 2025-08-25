@@ -46,7 +46,12 @@ class DealModel extends Model
 
     public function getDealById(int $id)
     {
-        return $this->find($id);
+        $builder = $this->builder();
+        $builder->select('deals.*, locations.lat, locations.lng, locations.address, locations.city, locations.state, locations.zip_code');
+        $builder->join('locations', 'locations.id = deals.location_id');
+        $builder->where('deals.id', $id);
+        
+        return $builder->get()->getRowArray();
     }
 
     public function searchDeals(array $filters)
