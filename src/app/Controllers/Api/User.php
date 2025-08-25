@@ -66,4 +66,30 @@ class User extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function show($id)
+    {
+        try {
+            $user = $this->userModel->find($id);
+            if (!$user) {
+                return $this->failNotFound('Usuário não encontrado');
+            }
+
+            $location = $this->locationModel->find($user['location_id']);
+
+            $response = [
+                'user' => [
+                    'name' => $user['name'],
+                    'email' => $user['email'],
+                    'login' => $user['login'],
+                    'password' => $user['password'],
+                    'location' => $location
+                ]
+            ];
+
+            return $this->respond($response);
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }

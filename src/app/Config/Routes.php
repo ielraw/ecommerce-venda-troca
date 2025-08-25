@@ -1,14 +1,29 @@
 <?php
 
+namespace Config;
+
 use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
+$routes = Services::routes();
+
+if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
+    require SYSTEMPATH . 'Config/Routes.php';
+}
+
+$routes->setDefaultNamespace('App\Controllers');
+$routes->setDefaultController('Home');
+$routes->setDefaultMethod('index');
+$routes->setTranslateURIDashes(false);
+$routes->set404Override();
+$routes->setAutoRoute(false);
+
 $routes->get('/', 'Home::index');
 
-// API Routes
 $routes->group('/', ['namespace' => 'App\Controllers\Api'], function($routes) {
-    // User routes
     $routes->post('user', 'User::create');
+    $routes->get('user/(:num)', 'User::show/$1');
 });
+
+if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
+    require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
+}
