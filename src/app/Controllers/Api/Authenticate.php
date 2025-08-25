@@ -87,12 +87,12 @@ class Authenticate extends BaseController
 
             $user = $this->userModel->getUserByLogin($jsonData['login']);
             if (!$user) {
-                return $this->failUnauthorized('Usuário não encontrado');
+                return $this->failUnauthorized('Credenciais inválidas');
             }
 
             $appToken = getenv('APP_TOKEN') ?: 'default_app_token';
             if ($jsonData['app_token'] !== $appToken) {
-                return $this->failUnauthorized('Token de aplicação inválido');
+                return $this->failUnauthorized('Credenciais inválidas');
             }
 
             $key = getenv('JWT_SECRET') ?: 'default_secret_key';
