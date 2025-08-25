@@ -64,4 +64,36 @@ class Message extends BaseController
             return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
         }
     }
+
+    public function show($dealId = 0, $messageId = 0)
+    {
+        try {
+            if (!$dealId || !$messageId) {
+                return $this->failValidationError('ID do deal e ID da mensagem são obrigatórios');
+            }
+
+            $deal = $this->dealModel->getDealById($dealId);
+            if (!$deal) {
+                return $this->failNotFound('Deal não encontrado');
+            }
+
+            $message = $this->messageModel->getMessageById($messageId, $dealId);
+            if (!$message) {
+                return $this->failNotFound('Mensagem não encontrada');
+            }
+
+            $response = [
+                'message' => [
+                    'user_id' => (int)$message['user_id'],
+                    'title' => $message['title'],
+                    'message' => $message['message']
+                ]
+            ];
+
+            return $this->respond($response);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('Erro interno do servidor: ' . $e->getMessage());
+        }
+    }
 }
