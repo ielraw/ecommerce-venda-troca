@@ -86,12 +86,8 @@ class Authenticate extends BaseController
             }
 
             $user = $this->userModel->getUserByLogin($jsonData['login']);
-            if (!$user) {
-                return $this->failUnauthorized('Credenciais inválidas');
-            }
-
             $appToken = getenv('APP_TOKEN') ?: 'default_app_token';
-            if ($jsonData['app_token'] !== $appToken) {
+            if (!$user || $jsonData['app_token'] !== $appToken) {
                 return $this->failUnauthorized('Credenciais inválidas');
             }
 
