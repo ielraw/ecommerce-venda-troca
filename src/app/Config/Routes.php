@@ -17,9 +17,12 @@ $routes->setTranslateURIDashes(false);
 $routes->set404Override();
 $routes->setAutoRoute(false);
 
-$routes->get('/', 'Home::index');
+//$routes->get('/', 'Home::index');
 
-$routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) {
+$routes->post('authenticate', 'Api\Authenticate::login');
+$routes->post('authenticate/sso', 'Api\Authenticate::sso');
+
+$routes->group('/', ['namespace' => 'App\\Controllers\\Api', 'filter' => 'auth'], function($routes) {
     $routes->post('user', 'User::create');
     $routes->get('user/(:num)', 'User::show/$1');
     $routes->put('user/(:num)', 'User::update/$1');
@@ -41,8 +44,6 @@ $routes->group('/', ['namespace' => 'App\\Controllers\\Api'], function($routes) 
     $routes->get('user/(:num)/invite', 'Invite::listInvites/$1');
     $routes->get('user/(:num)/invite/(:num)', 'Invite::show/$1/$2');
     $routes->put('user/(:num)/invite/(:num)', 'Invite::update/$1/$2');
-    $routes->post('authenticate', 'Authenticate::login');
-    $routes->post('authenticate/sso', 'Authenticate::sso');
 });
 
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
